@@ -1,0 +1,37 @@
+#!/bin/bash
+
+##########PARAMETERS##########
+BACKUP_DATA_DIR=/home/skillbox/backup
+BACKUP_DIR=$BACKUP_DATA_DIR/$(date +%Y%m%d_%H%M%S)
+DIRECTORIES="/home/skillbox/data//home/skillbox/config/"
+DBUSER=root
+DBPASS=qwertypassword987
+########/PARAMETERS#########
+
+echo "Started at: "$(DATE)
+mkdir $BACKUP_DIR
+
+#making and archivation DB dumps
+mysqldump --opt -u $DBUSER -p$PASS --events --all-databases > $BACKUP_DIR/all.sql
+tar -cjf $BACKUPDIR/all.sql.tbz -C $BACKUP_DIR/all.sql #archive command/key/-c-create/j-bzip2/-C-directory for archieve 
+rm $BACKUP_DIR/all.sql
+echo "Database backup finished"
+
+#Making directory backups
+for DIRNAME in $DIRECTORIES
+do
+    echo "Backupping $DIRNAME"
+    cd $DIRNAME
+    FILENAME=`echo $DIRNAME | sed 's/[\/]/\_g' | sed 's/^\_\+\|\_\+$//g'`#sed replace slashes to underscores
+    tar -cjf $BACKUP_DIR/$FILENAME.tbz ./
+done
+echo "Directories backupping finished"
+
+#Changing mode
+chmod -R 700 $BACKUP_DIR
+
+#Removing old directories
+cd $BACKUP_DATA_DIR
+find ./* -type d -mtime +$DAYS_TO_STORE | xargs -r rm -R
+
+echo -e "Finiched at: "$(date)"\n"
